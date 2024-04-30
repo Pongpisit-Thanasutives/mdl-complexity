@@ -4,7 +4,7 @@ import scipy.optimize
 from sklearn.base import BaseEstimator
 
 
-def prac_mdl_comp(X_train, y_train, variance=1):
+def prac_mdl_comp(X_train, y_train, variance=1, max_lambda=np.inf):
     '''Calculate prac-mdl-comp for this dataset
     '''
     eigenvals, eigenvecs = npl.eig(X_train.T @ X_train)
@@ -14,14 +14,14 @@ def prac_mdl_comp(X_train, y_train, variance=1):
         return inv @ X_train.T @ y_train
 
     def prac_mdl_comp_objective(l):
-#         print(X_train.shape, eigenvals.shape)
+        # print(X_train.shape, eigenvals.shape)
         thetahat = calc_thetahat(l)
         mse_norm = npl.norm(y_train - X_train @ thetahat)**2 / (2 * variance)
         theta_norm = l*npl.norm(thetahat)**2 / (2 * variance)
         eigensum = 0.5 * np.sum(np.log((eigenvals + l) / l))
         return (mse_norm + theta_norm + eigensum) / y_train.size
 
-    opt_solved = scipy.optimize.minimize(prac_mdl_comp_objective, bounds=((0.0, np.inf),), x0=1e-10)
+    opt_solved = scipy.optimize.minimize(prac_mdl_comp_objective, bounds=((0.0, max_lambda),), x0=1e-10)
     prac_mdl = opt_solved.fun
     lambda_opt = opt_solved.x
     thetahat = calc_thetahat(lambda_opt)
